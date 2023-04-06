@@ -3,6 +3,13 @@ import random
 # Define the game rules
 rules = {'rock': 'scissors', 'paper': 'rock', 'scissors': 'paper'}
 
+# print rules.keys()
+print(rules.keys())
+# print rules.values()
+# print rules.items()
+
+
+
 # Define the reinforcement learning parameters
 alpha = 0.1
 gamma = 0.9
@@ -67,14 +74,74 @@ while True:
         player_score += 1
         result = 'win'
     elif list(rules.keys())[bot_action] == list(rules.keys())[player_action]:
+        result = 'tie'
+    else:
         bot_score += 1
         result = 'loss'
-    else:
-        result = 'tie'
 
     # Update the game history and state
     game_history.append((state, bot_action))
     state = (bot_action, player_action)
 
-    # Print the results of the round
+
     print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
+    print(f"Your score: {player_score}")
+    print(f"Bot score: {bot_score}")
+    print(f"Result: {result}")
+    # Print the results of the round
+    
+    rock = '''
+          ____
+    ---'   ____)
+         (_____)
+         (_____)
+          (____)
+    ---.__(___)
+    '''
+
+    paper = '''
+          _____
+    ---'   ____)____
+            ________)
+            ________)
+            ________)
+    ---.___________)
+    '''
+
+    scissors = '''
+          _____
+    ---'   ____)____
+            ________)
+        ____________)
+        (____)
+    ---.__(___)
+    '''
+    #print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
+    # Print the ASCII art for each option
+    # To print out the player's choice and the computer's choice side by side, you can use the zip() function to iterate over the two lists of ASCII art, and use string formatting to align them properly:
+    # player_art = [rock, paper, scissors][["rock", "paper", "scissors"].index(player_choice)]
+    #computer_art = [rock, paper, scissors][["rock", "paper", "scissors"].index(computer_choice)]
+    #for player_line, computer_line in zip(player_art.split("\n"), computer_art.split("\n")):
+    #print(f"{player_line:<25}{computer_line:>25}")
+    # Print the results of the game
+
+    player_art = [rock, scissors , paper][["rock", "scissors", "paper"].index(list(rules.keys())[player_action])]
+    computer_art = [rock, scissors, paper][["rock", "scissors", "paper"].index(list(rules.keys())[bot_action])]
+    print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
+    for player_line, computer_line in zip(player_art.split("\n"), computer_art.split("\n")):
+        print(f"{player_line:<20} {computer_line:>15}")
+        #if player_action == 0:
+         #   print(rock)
+      #  elif player_action == 1:
+      #      print(paper)
+      #  else:
+      #      print(scissors)
+      #  if bot_action == 0:
+      #      print(rock)
+      #  elif bot_action == 1:
+      #      print(paper)
+      #  else:
+      #      print(scissors)
+   
+    
+
