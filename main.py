@@ -1,14 +1,13 @@
 import random
+import os
+import pandas as pd
+import numpy as np
+from collections import defaultdict
 
 # Define the game rules
 rules = {'rock': 'scissors', 'paper': 'rock', 'scissors': 'paper'}
-
-# print rules.keys()
-print(rules.keys())
-# print rules.values()
-# print rules.items()
-
-
+# if file path does not exist create file "game_results.txt" in this dir
+file_path = "game_results.csv"
 
 # Define the reinforcement learning parameters
 alpha = 0.1
@@ -16,9 +15,9 @@ gamma = 0.9
 
 # Define the initial Q-values for each state-action pair
 Q = {}
-for i in range(3):
+for i in range(2):
     for j in range(3):
-        state = (i, j)
+        state = ('bot' if i==0 else 'user', j)
         for action in range(3):
             Q[(state, action)] = 0.5
 
@@ -41,107 +40,85 @@ def select_action(state, epsilon):
 
 # Define a function to update the Q-values based on the results of a single game
 def update_Q_values(game_history):
-    result = game_history[-1]
+    result = game_history[-1][1]
     for i in range(len(game_history) - 1):
         state, action = game_history[i]
         reward = -1 if result == 'loss' else 0 if result == 'tie' else 1
         next_state = game_history[i+1][0]
-        Q[(state, action)] += alpha * (reward + gamma * max([Q[(next_state, a)] for a in range(3)]) - Q[(state, action)])
+        Q[(state, action)][action] += alpha * (reward + gamma * max(Q[(next_state, a)][a] for a in range(3)) - Q[(state, action)][action])
+        data = {'Player choice': [list(state)[1]],
+                'Bot choice': [action],
+                'Result': [result],
+                'Reward': [reward]}
+        df = pd.DataFrame(data)
+        with open(file_path, "a") as f:
+            df.to_csv(f, header=f.tell()==0, index=False)
 
-# Play the game multiple times
+print(rules.keys())
+
+print("Let's play rock-paper-scissors!")
+print("Enter 0 for rock, 1 for paper, 2 for scissors or -1 to quit")
+score = {'win': 0, 'tie': 0, 'loss': 0}
+game_history = []
+
 while True:
-    # Initialize the game state
-    player_score = 0
-    bot_score = 0
-    game_history = []
-    state = (0, 0)
-
-    # Ask the player to choose their action
-    player_action = input("Choose your action: rock (0), paper (1), or scissors (2) ")
-
-    # Keep asking for player's input until it is valid
-    while player_action not in ['0', '1', '2']:
-        player_action = input("Invalid input. Choose your action: rock (0), paper (1), or scissors (2) ")
-
-    # Convert the player's action to an integer
-    player_action = int(player_action)
-
-    # Select the bot's action based on the current state and Q-values
-    bot_action = select_action(state, epsilon=0.1)
-
-    # Determine the winner of the round
-    if rules[list(rules.keys())[player_action]] == list(rules.keys())[bot_action]:
-        player_score += 1
-        result = 'win'
-    elif list(rules.keys())[bot_action] == list(rules.keys())[player_action]:
-        result = 'tie'
-    else:
-        bot_score += 1
-        result = 'loss'
-
-    # Update the game history and state
-    game_history.append((state, bot_action))
-    state = (bot_action, player_action)
+    user_choice = input("Your move: ")
+    if user
 
 
-    print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
-    print(f"Your score: {player_score}")
-    print(f"Bot score: {bot_score}")
-    print(f"Result: {result}")
-    # Print the results of the round
+
+    while True:
+        user_choice = input("Your move: ")
+        if user_choice == "-1":
+            print("Goodbye!")
+            break
+        elif user_choice not in ['0', '1', '2']:
+            print("Invalid input, please try again.")
+            continue
     
-    rock = '''
-          ____
-    ---'   ____)
-         (_____)
-         (_____)
-          (____)
-    ---.__(___)
-    '''
+    state = ('user', user_choice)
+    bot_action = np.argmax(Q[state])
+    if np.random.uniform() < epsilon:
+        bot_action = np.random.choice([0, 1, 2])
+    bot_choice = list(rules.keys())[bot_action]
 
-    paper = '''
-          _____
-    ---'   ____)____
-            ________)
-            ________)
-            ________)
-    ---.___________)
-    '''
+    print("User choice:")
+    print([rock, scissors, paper][user_choice])
+    print("Bot choice:")
+    print([rock, scissors, paper][bot_action])
 
-    scissors = '''
-          _____
-    ---'   ____)____
-            ________)
-        ____________)
-        (____)
-    ---.__(___)
-    '''
-    #print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
-    # Print the ASCII art for each option
-    # To print out the player's choice and the computer's choice side by side, you can use the zip() function to iterate over the two lists of ASCII art, and use string formatting to align them properly:
-    # player_art = [rock, paper, scissors][["rock", "paper", "scissors"].index(player_choice)]
-    #computer_art = [rock, paper, scissors][["rock", "paper", "scissors"].index(computer_choice)]
-    #for player_line, computer_line in zip(player_art.split("\n"), computer_art.split("\n")):
-    #print(f"{player_line:<25}{computer_line:>25}")
-    # Print the results of the game
+    result = rules[list(rules.keys())[user_choice]][bot_choice]
+    if result == 1:
+        print("You win!")
+        # add one to score 'win'
+        score['win'] += 1
 
-    player_art = [rock, scissors , paper][["rock", "scissors", "paper"].index(list(rules.keys())[player_action])]
-    computer_art = [rock, scissors, paper][["rock", "scissors", "paper"].index(list(rules.keys())[bot_action])]
-    print(f"You played {list(rules.keys())[player_action]} and the bot played {list(rules.keys())[bot_action]}")
-    for player_line, computer_line in zip(player_art.split("\n"), computer_art.split("\n")):
-        print(f"{player_line:<20} {computer_line:>15}")
-        #if player_action == 0:
-         #   print(rock)
-      #  elif player_action == 1:
-      #      print(paper)
-      #  else:
-      #      print(scissors)
-      #  if bot_action == 0:
-      #      print(rock)
-      #  elif bot_action == 1:
-      #      print(paper)
-      #  else:
-      #      print(scissors)
+    elif result == -1:
+        print("You lose.")
+        # add one to score 'loss'
+        score['loss'] += 1
+        
+    else:
+        print("Tie!")
+        # add one to score 'tie'
+        score['tie'] += 1
+
+    update_Q_values([(state, bot_action), (('bot', bot_action), user_choice), (('user', user_choice), bot_action), (('bot', bot_action), result)])
+    #write score to a csv file scoreboard.csv , if it does not exist in this directory create the file
+    with open(file_path, "a") as f:
+        df = pd.DataFrame(score)
+        df.to_csv(f, header=f.tell()==0, index=False)
+
+    print("Score: ", score)
+  
+    with open(file_path, "a") as f:
+        df = pd.DataFrame(score)
+        df.to_csv(f, header=f.tell()==0, index=False)
+    #print the score
+    print("Score: ", score)     
+
+   
+       
    
     
 
